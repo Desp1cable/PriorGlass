@@ -1,20 +1,20 @@
 const mongoose = require('mongoose')
 
 const schema = new mongoose.Schema({
-  name: { type: String, required: true },
+  name: String,
   category: Array,
-  price: { type: Number, required: true },
+  price: Number,
   photoPath:  String,
   type: String,
   width: String,
   height: String,
   shape: String,
-  Edge: String,
-  Hardening: String,
+  edge: String,
+  hardening: String,
   facet: String,
   cutouts: String,
-  Holes: String,
-  Draw: String
+  holes: String,
+  draw: String
 })
 
 module.exports = mongoose.model("Products", schema)
