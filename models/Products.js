@@ -1,9 +1,9 @@
 const mongoose = require('mongoose')
 
 const schema = new mongoose.Schema({
-  name: String,
+  name: {type: String, required: true},
   category: Array,
-  price: Number,
+  price: {type: Number, required: true},
   photoPath:  String,
   type: String,
   width: String,

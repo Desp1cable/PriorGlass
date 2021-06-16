@@ -50,15 +50,8 @@ mongoose.connect(URI, {useNewUrlParser: true, useUnifiedTopology: true})
 // --API--
 
 // Products
-
 // !Нужно довети до ума
-app.post('/addProduct', jsonParser, upload.single("filedata"), (req, res) => {
-  let filedata = req.body.file;
-    console.log(filedata);
-    if(!filedata)
-        res.send("Ошибка при загрузке файла");
-    else
-        res.send("Файл загружен");
+app.post('/addProduct', jsonParser, (req, res) => {
   
   let photoPath = '/path'
 
@@ -85,11 +78,35 @@ app.get('/getProducts', jsonParser, (req, res) => {
   }).catch(err => sendError(res, status.serverError, err))
 })
 app.post('/getProduct', jsonParser, (req, res) => {
-  Products.findOne({_id: req.body,_id}, ProductsFields, (err, query) => {
+  Products.findOne({_id: req.body._id}, ProductsFields, (err, query) => {
     sendJSON(res, status.ok, query)
   }).catch(err => sendError(res, status.serverError, err))
 })
-// * /updateProduct
+app.post('/updateProduct', jsonParser, (req, res) => {
+  // * путь до фотографии
+  Products.findOneAndUpdate(
+    {_id: req.body._id}, 
+    {
+      name: req.body.name,
+      category: req.body.category,
+      price: req.body.price,
+      photoPath: photoPath,
+      type: req.body.type,
+      width: req.body.width,
+      height: req.body.height,
+      shape: req.body.shape,
+      edge: req.body.edge,
+      hardening: req.body.hardening,
+      facet: req.body.facet,
+      cutouts: req.body.cutouts,
+      holes: req.body.holes,
+      draw: req.body.draw
+    }, 
+    {useFindAndModify: false, new: true},
+    (err, query) => {
+      sendJSON(res, status.ok, query)
+    }).catch(err => sendError(res, status.serverError, err))
+})
 
 // Order
 app.post('/addOrder', jsonParser, (req, res) => {
@@ -159,6 +176,18 @@ app.post('/finishChat', jsonParser, (req, res) => {
       sendJSON(res, status.created, query)
     }).catch(err => sendError(res, status.serverError, err))
 })
+
+// Tests
+app.post("/upload", upload.single("filedata"), function (req, res, next) {
+   
+  let filedata = req.file;
+
+  console.log(filedata);
+  if(!filedata)
+      res.send("Ошибка при загрузке файла");
+  else
+      res.send("Файл загружен");
+});
 
 // Not Found
 app.use((req, res) => {
