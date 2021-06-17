@@ -1,13 +1,32 @@
 const app = require('express')()
 const mongoose = require('mongoose')
 const jsonParser = require('body-parser').json()
-const multer = require('multer')
+const swaggerJsDoc = require('swagger-jsdoc')
+const swaggerUi = require('swagger-ui-express');
+const fs = require('fs')
+// const swaggerDocument = require('./swagger.json');
 
 // Config
 const port = 3000
 const URI = 'mongodb+srv://Despicable:Zhengulov1@glass.pljrt.mongodb.net/myFirstDatabase?retryWrites=true&w=majority'
 const rootEmail = 'despicablegrand@gmail.com'
-const upload = multer({dest:"uploads"});
+// Extended: https://swagger.io/specification/#infoObject
+const swaggerOptions = {
+  swaggerDefinition: {
+    info: {
+      version: "1.0.0",
+      title: "PriorGlass API",
+      description: "PriorGlass API Information",
+      contact: {
+        name: "Desp1calbe"
+      },
+      servers: ["http://localhost:3000"]
+    }
+  },
+  apis: ["app.js"]
+};
+const swaggerDocs = swaggerJsDoc(swaggerOptions);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 // Models
 const Chats = require('./models/Chats.js')
@@ -72,16 +91,62 @@ app.post('/addProduct', jsonParser, (req, res) => {
     draw: req.body.draw
   })
 })
+
+/**
+ * @swagger
+ * /getProducts:
+ *  get:
+ *    description: Use to request all products
+ *  responses:
+ *    '200':
+ *      description: A successful response
+ */
 app.get('/getProducts', jsonParser, (req, res) => {
   Products.find({}, ProductsFields, (err, query) => {
     sendJSON(res, status.ok, query)
   }).catch(err => sendError(res, status.serverError, err))
 })
+
+/**
+ * @swagger
+ * /getProduct:
+ *  post:
+ *    description: Use to request product
+ *  parameters:
+ *    - _id: _id
+ *      in: query
+ *      description: _id of our product
+ *      required: false
+ *      schema:
+ *        type: string
+ *        format: string
+ *  responses:
+ *    '200':
+ *      description: A successful response
+ */
 app.post('/getProduct', jsonParser, (req, res) => {
   Products.findOne({_id: req.body._id}, ProductsFields, (err, query) => {
     sendJSON(res, status.ok, query)
   }).catch(err => sendError(res, status.serverError, err))
 })
+
+/**
+ * @swagger
+ * /updateProduct:
+ *  post:
+ *    description: Use to update product
+ *  parameters:
+ *    - name: name
+ *      in: query
+ *      description: Name of our customer
+ *      required: false
+ *      schema:
+ *        type: string
+ *        format: string
+ *  responses:
+ *    '200':
+ *      description: A successful response
+ */
 app.post('/updateProduct', jsonParser, (req, res) => {
   // * путь до фотографии
   Products.findOneAndUpdate(
@@ -178,16 +243,26 @@ app.post('/finishChat', jsonParser, (req, res) => {
 })
 
 // Tests
-app.post("/upload", upload.single("filedata"), function (req, res, next) {
-   
-  let filedata = req.file;
+// function encode_base64(filename) {
+//   fs.readFile(path.join(__dirname, filename), function (error, data) {
+//     if (error) {
+//       throw error;
+//     } else {
+//       //console.log(data);
+//       var dataBase64 = Buffer.from(data).toString('base64');
+//       console.log(dataBase64);
+//       client.write(dataBase64);
+//     }
+//   });
+// }
+// function base64_decode(base64Image, file) {
+//   fs.writeFileSync(file,base64Image);
+//    console.log('******** File created from base64 encoded string ********');
 
-  console.log(filedata);
-  if(!filedata)
-      res.send("Ошибка при загрузке файла");
-  else
-      res.send("Файл загружен");
-});
+// }
+// app.post("/upload", jsonParser, (req, res) => {
+//   base64_decode(req.body.file, 'copy.jpg')
+// });
 
 // Not Found
 app.use((req, res) => {
@@ -198,16 +273,3 @@ app.use((req, res) => {
 app.listen(port, () => {
   console.log(`listening on port: ${port}`);
 });
-
-
-
-// --old version
-// app.post('/addMessage', jsonParser, (req, res) => {
-//   Chats.create({
-//     userEmail: req.body.userEmail,
-//     message: req.body.message,
-//     isUser: req.body.isUser
-//   })
-//   .then(() => sendJSON(res, status.ok, {added: true}))
-//   .catch(err => sendError(res, status.ok, err))
-// })
